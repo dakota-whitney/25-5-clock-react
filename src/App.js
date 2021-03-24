@@ -32,6 +32,7 @@ class App extends React.Component{
   componentDidUpdate(){
     if(this.state.sessionActive){
       if(this.state.session.getMinutes() === 0 && this.state.session.getSeconds() === 0){
+        document.getElementById('beep').play()
         this.setState({
           sessionActive: false,
           timerActive: true
@@ -39,6 +40,7 @@ class App extends React.Component{
       }
     } else {
       if(this.state.break.getMinutes() === 0 && this.state.break.getSeconds() === 0){
+        document.getElementById('beep').play()
         this.setState({
           sessionActive: true,
           timerActive: true
@@ -195,7 +197,7 @@ class Display extends React.Component{
     return(
     <div id="display">
       <div id="timer-label">{this.props.sessionActive ? "Session" : "Break"}</div>
-      <div id="time-left">{this.props.sessionActive ? this.props.sessionTimeLeft : this.props.breakTimeLeft}</div>
+      <div id="time-left">{this.props.sessionActive ? this.props.sessionTimeLeft : this.props.breakTimeLeft}<audio id="beep" src="https://github.com/dakota-whitney/25-5-clock-react/blob/main/public/beep.wav?raw=true"></audio></div>
       <i id="start_stop" className={this.props.timerActive ? 'far fa-pause-circle fa-2x' : 'fas fa-hourglass-start fa-2x'} onClick={this.props.startTimer}></i>
       <i id="reset" className="fas fa-redo fa-2x" onClick={this.props.resetTimer}></i>
     </div>
