@@ -31,20 +31,26 @@ class App extends React.Component{
   }
   componentDidUpdate(){
     if(this.state.sessionActive){
-      if(this.state.session.getMinutes() === 0 && this.state.session.getSeconds() === 0){
-        document.getElementById('beep').play()
-        this.setState({
-          sessionActive: false,
-          timerActive: true
-        })
+      if(this.state.session.getHours() !== 1 && this.state.session.getMinutes() === 0 && this.state.session.getSeconds() === 0){
+        setTimeout(() => {
+          document.getElementById('beep').play()
+          this.setState({
+            sessionActive: false,
+            timerActive: false
+          })
+          this.startTimer();
+        },1000)
       }
     } else {
-      if(this.state.break.getMinutes() === 0 && this.state.break.getSeconds() === 0){
-        document.getElementById('beep').play()
-        this.setState({
-          sessionActive: true,
-          timerActive: true
-        })
+      if(this.state.break.getHours() !== 1 && this.state.break.getMinutes() === 0 && this.state.break.getSeconds() === 0){
+        setTimeout(() => {
+          document.getElementById('beep').play()
+          this.setState({
+            sessionActive: true,
+            timerActive: false
+          })
+          this.startTimer();
+        },1000)
       }
     }
   }
@@ -61,6 +67,9 @@ incrementSession(e){
     session: new Date(2021,4,19,0,state.session.getMinutes() + 1,state.session.getSeconds()),
     sessionLength: state.session.getMinutes() + 1
   }))
+    this.setState(state => (
+      console.log(`The current hours are ${state.session.getHours()}`)
+    ))
 }
 decrementSession(e){
   this.toggleStyle(e.target.id)
@@ -88,8 +97,15 @@ decrementBreak(e){
   }
 }
 startTimer(e){
-  this.toggleStyle(e.target.id)
-  
+  this.setState(state => (
+    console.log(`The current hours are ${state.session.getHours()}`)
+  ))
+  if(e){
+    this.toggleStyle(e.target.id)
+  }
+  this.setState(state => (
+    console.log(`The timer is running: ${state.timerActive}`)
+  ))
   //If timer is currently counting down
   if(this.state.timerActive){
     this.setState({
@@ -138,6 +154,18 @@ resetTimer(e){
   })
 }
 render(){
+  let sessionTimeLeft = "";
+  let breakTimeLeft = "";
+  if(this.state.sessionLength === 60 && this.state.session.getMinutes() === 0){
+    sessionTimeLeft = "60:00"
+  } else {
+    sessionTimeLeft = this.state.session.toTimeString().substring(3,8)
+  }
+  if(this.state.breakLength === 60 && this.state.break.getMinutes() === 0){
+    breakTimeLeft = "60:00"
+  } else {
+    breakTimeLeft = this.state.break.toTimeString().substring(3,8)
+  }
   return (
     <div className="container-fluid">
         <h1>Dakota's 25 + 5 Clock</h1>
@@ -152,10 +180,12 @@ render(){
           decrementSession={this.decrementSession}
         />
         <Display
+          breakLength={this.state.breakLength}
+          sessionLength={this.state.sessionLength}
           sessionActive={this.state.sessionActive}
           timerActive={this.state.timerActive}
-          sessionTimeLeft={this.state.session.toTimeString().substring(3,8)}
-          breakTimeLeft={this.state.break.toTimeString().substring(3,8)}
+          sessionTimeLeft={sessionTimeLeft}
+          breakTimeLeft={breakTimeLeft}
           startTimer={this.startTimer}
           resetTimer={this.resetTimer}
         />
