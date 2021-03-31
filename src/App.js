@@ -1,4 +1,3 @@
-import { render } from '@testing-library/react';
 import React from 'react';
 import './App.css';
 
@@ -32,23 +31,31 @@ class App extends React.Component{
   componentDidUpdate(){
     if(this.state.sessionActive){
       if(this.state.session.getHours() !== 1 && this.state.session.getMinutes() === 0 && this.state.session.getSeconds() === 0){
+        if(this.state.timerId !== 0){
+          clearInterval(this.state.timerId)
+        }
         setTimeout(() => {
           document.getElementById('beep').play()
-          this.setState({
+          this.setState(state => ({
+            session: new Date(2021,4,19,0,state.sessionLength,0),
             sessionActive: false,
             timerActive: false
-          })
+          }))
           this.startTimer();
         },1000)
       }
     } else {
       if(this.state.break.getHours() !== 1 && this.state.break.getMinutes() === 0 && this.state.break.getSeconds() === 0){
+        if(this.state.timerId !== 0){
+          clearInterval(this.state.timerId)
+        }
         setTimeout(() => {
           document.getElementById('beep').play()
-          this.setState({
+          this.setState(state => ({
+            break: new Date(2021,4,19,0,state.breakLength,0),
             sessionActive: true,
             timerActive: false
-          })
+          }))
           this.startTimer();
         },1000)
       }
@@ -63,13 +70,12 @@ class App extends React.Component{
   }
 incrementSession(e){
   this.toggleStyle(e.target.id)
+  if(this.state.sessionLength <= 59){
   this.setState(state => ({
     session: new Date(2021,4,19,0,state.session.getMinutes() + 1,state.session.getSeconds()),
     sessionLength: state.session.getMinutes() + 1
   }))
-    this.setState(state => (
-      console.log(`The current hours are ${state.session.getHours()}`)
-    ))
+}
 }
 decrementSession(e){
   this.toggleStyle(e.target.id)
@@ -82,10 +88,12 @@ decrementSession(e){
 }
 incrementBreak(e){
   this.toggleStyle(e.target.id)
+  if(this.state.breakLength <= 59){
     this.setState(state => ({
       break: new Date(2021,4,19,0,state.break.getMinutes() + 1,state.break.getSeconds()),
       breakLength: state.break.getMinutes() + 1
     }))
+  }
 }
 decrementBreak(e){
   this.toggleStyle(e.target.id)
@@ -97,15 +105,9 @@ decrementBreak(e){
   }
 }
 startTimer(e){
-  this.setState(state => (
-    console.log(`The current hours are ${state.session.getHours()}`)
-  ))
   if(e){
     this.toggleStyle(e.target.id)
   }
-  this.setState(state => (
-    console.log(`The timer is running: ${state.timerActive}`)
-  ))
   //If timer is currently counting down
   if(this.state.timerActive){
     this.setState({
@@ -150,8 +152,10 @@ resetTimer(e){
       break: new Date(2021,4,19,0,5,0),
       breakLength: 5,
       sessionActive: true,
-      timerActive: false
+      timerActive: false,
+      timerId: 0
   })
+  document.getElementById('beep').load()
 }
 render(){
   let sessionTimeLeft = "";
@@ -180,8 +184,6 @@ render(){
           decrementSession={this.decrementSession}
         />
         <Display
-          breakLength={this.state.breakLength}
-          sessionLength={this.state.sessionLength}
           sessionActive={this.state.sessionActive}
           timerActive={this.state.timerActive}
           sessionTimeLeft={sessionTimeLeft}
@@ -204,13 +206,13 @@ class UI extends React.Component{
       <div id="ui">
         <div id="break-label">
           <h2 className="label-header">Break Length:</h2>
-          <div id="break-length" className="length">{this.props.breakLength}</div>
+          <div id="break-length" className="length">{this.props.breakLength}{/*console.log(`The breakLength is ${this.props.breakLength}`)*/}</div>
           <i id="break-increment" className="fas fa-arrow-circle-up fa-2x" onClick={this.props.incrementBreak}></i>
           <i id="break-decrement" className="fas fa-arrow-circle-down fa-2x" onClick={this.props.decrementBreak}></i>
         </div>
         <div id="session-label">
           <h2 className="label-header">Session Length:</h2>
-          <div id="session-length" className="length">{this.props.sessionLength}</div>
+          <div id="session-length" className="length">{this.props.sessionLength}{/*console.log(`The sessionLength is ${this.props.sessionLength}`)*/}</div>
           <i id="session-increment" className="fas fa-arrow-circle-up fa-2x" onClick={this.props.incrementSession}></i>
           <i id="session-decrement" className="fas fa-arrow-circle-down fa-2x" onClick={this.props.decrementSession}></i>
         </div>
@@ -226,8 +228,8 @@ class Display extends React.Component{
   render(){
     return(
     <div id="display">
-      <div id="timer-label">{this.props.sessionActive ? "Session" : "Break"}</div>
-      <div id="time-left">{this.props.sessionActive ? this.props.sessionTimeLeft : this.props.breakTimeLeft}<audio id="beep" src="https://github.com/dakota-whitney/25-5-clock-react/blob/main/public/beeps.wav?raw=true"></audio></div>
+      <div id="timer-label">{this.props.sessionActive ? "Session" : "Break"}{/*console.log(`${this.props.sessionActive ? "Displaying 'Session'" : "Displaying 'Break'"}`)*/}</div>
+      <div id="time-left">{this.props.sessionActive ? this.props.sessionTimeLeft : this.props.breakTimeLeft}{/*console.log(`sessionTimeLeft is ${this.props.sessionTimeLeft}\nbreakTimeLeft is ${this.props.breakTimeLeft}`)*/}<audio id="beep" src="https://github.com/dakota-whitney/25-5-clock-react/blob/main/public/beeps.wav?raw=true"></audio></div>
       <i id="start_stop" className={this.props.timerActive ? 'far fa-pause-circle fa-2x' : 'fas fa-hourglass-start fa-2x'} onClick={this.props.startTimer}></i>
       <i id="reset" className="fas fa-redo fa-2x" onClick={this.props.resetTimer}></i>
     </div>
